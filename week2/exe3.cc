@@ -54,7 +54,7 @@ void initialize_score(vector<vector<int>> &s, int row, int col, int indel)
     return;
 }
 
-void initialize_with_char(vector<vector<char>> &m, int row, int col)
+void initialize_backtrack(vector<vector<char>> &m, int row, int col)
 {
     for (int i = 0; i < row; i++)
     {
@@ -73,7 +73,7 @@ void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int m
     int n = v.size(), m = w.size();
     vector<vector<int>> s;
     initialize_score(s, n + 1, m + 1, sigma);
-    initialize_with_char(Backtrack, n + 1, m + 1);
+    initialize_backtrack(Backtrack, n + 1, m + 1);
 
     for (int i = 1; i <= n; i++)
     {
@@ -173,10 +173,10 @@ int Edit_Distance(string &v, string &w)
     vector<char> solution_v, solution_w;
     int solution;
 
-    Global_Alignment(v, w, Backtrack, 0, 1, 1); //* ie maximize the alignment where we have minimum insertion, deletions and mismatches (substitutions)
+    Global_Alignment(v, w, Backtrack, 0, 1, 1); //* ie maximize the alignment where we have minimum insertion, deletions and mismatches (substitutions) (and maximize the matches)
     OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w);
 
-    //* Given the best alignments, we compute the number of mismatches among them, ie the Hamming Distance
+    //* Given the best alignments, we compute the number of different entries among them, ie the Hamming Distance
     solution = Hamming_Distance(solution_v, solution_w);
 
     return solution;
