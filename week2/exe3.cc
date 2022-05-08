@@ -19,6 +19,7 @@ int main(int argc, char const *argv[])
     string file_name = argv[1], // dataset_248_3.txt
         v, w;
     populate(file_name, v, w);
+
     int solution = Edit_Distance(v, w);
 
     cout << solution << '\n';
@@ -38,9 +39,9 @@ void initialize_score(vector<vector<int>> &s, int row, int col, int indel)
         }
     }
 
-    for (int i = 1; i < col; i++)
+    for (int j = 1; j < col; j++)
     {
-        s[0][i] += s[0][i - 1] - indel;
+        s[0][j] += s[0][j - 1] - indel;
     }
 
     for (int i = 1; i < row; i++)
@@ -101,29 +102,51 @@ void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int m
     return;
 }
 
-void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw, int match, int mu, int sigma)
+void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw)
 {
-    if (i == 0 || j == 0)
+    if (i == 0 && j == 0)
     {
+        return;
+    }
+    else if (i == 0 && j != 0)
+    {
+        while (j != 0)
+        {
+            Sv.push_back('-');
+            Sw.push_back(w[j - 1]);
+            j--;
+        }
+
+        return;
+    }
+    else if (j == 0 && i != 0)
+    {
+        while (i != 0)
+        {
+            Sv.push_back(v[i - 1]);
+            Sw.push_back('-');
+            i--;
+        }
+
         return;
     }
     if (Backtrack[i][j] == 'd')
     {
         Sv.push_back(v[i - 1]);
         Sw.push_back('-');
-        return OutputLCS(Backtrack, w, v, i - 1, j, Sv, Sw, match, mu, sigma);
+        return OutputLCS(Backtrack, w, v, i - 1, j, Sv, Sw);
     }
     else if (Backtrack[i][j] == 'r')
     {
         Sw.push_back(w[j - 1]);
         Sv.push_back('-');
-        return OutputLCS(Backtrack, w, v, i, j - 1, Sv, Sw, match, mu, sigma);
+        return OutputLCS(Backtrack, w, v, i, j - 1, Sv, Sw);
     }
     else
     {
         Sv.push_back(v[i - 1]);
         Sw.push_back(w[j - 1]);
-        return OutputLCS(Backtrack, w, v, i - 1, j - 1, Sv, Sw, match, mu, sigma);
+        return OutputLCS(Backtrack, w, v, i - 1, j - 1, Sv, Sw);
     }
 
     return;
@@ -150,7 +173,17 @@ int Edit_Distance(string &v, string &w)
     int solution;
 
     Global_Alignment(v, w, Backtrack, 0, 1, 1);
-    OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w, 0, 1, 1);
+    OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w);
+    for (auto elem : solution_w)
+    {
+        cout << elem;
+    }
+    cout << '\n';
+    for (auto elem : solution_v)
+    {
+        cout << elem;
+    }
+    cout << '\n';
 
     solution = Hamming_Distance(solution_v, solution_w);
 
