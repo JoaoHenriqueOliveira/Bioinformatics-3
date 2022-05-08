@@ -1,10 +1,10 @@
 #include <bits/stdc++.h>
-//* Needleman–Wunsch algorithm
+//* Global ALignment Problem (Needleman–Wunsch Algorithm)
 
 using namespace std;
 
-void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int match, int mu, int sigma);
-void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &solution_v, vector<char> &solution_w, int &s, int &match, int &mu, int &sigma);
+void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int &similarity, int match, int mu, int sigma);
+void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &solution_v, vector<char> &solution_w, int &match, int &mu, int &sigma);
 
 void populate(string file_name, int &match, int &mismatch, int &indel, string &v, string &w)
 {
@@ -27,8 +27,8 @@ int main(int argc, char const *argv[])
 
     populate(file, match, mu, sigma, v, w);
 
-    Global_Alignment(v, w, Backtrack, match, mu, sigma);
-    OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w, similarity, match, mu, sigma);
+    Global_Alignment(v, w, Backtrack, similarity, match, mu, sigma);
+    OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w, match, mu, sigma);
 
     reverse(solution_v.begin(), solution_v.end());
     reverse(solution_w.begin(), solution_w.end());
@@ -73,7 +73,7 @@ void initialize_score(vector<vector<int>> &s, int row, int col, int &indel)
     return;
 }
 
-void initialize_with_char(vector<vector<char>> &m, int row, int col)
+void initialize_backtrack(vector<vector<char>> &m, int row, int col)
 {
     for (int i = 0; i < row; i++)
     {
@@ -115,12 +115,12 @@ void display_backtrack(vector<vector<char>> &m)
     return;
 }
 
-void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int match, int mu, int sigma)
+void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int &similarity, int match, int mu, int sigma)
 {
     int n = v.size(), m = w.size();
     vector<vector<int>> s;
     initialize_score(s, n + 1, m + 1, sigma);
-    initialize_with_char(Backtrack, n + 1, m + 1);
+    initialize_backtrack(Backtrack, n + 1, m + 1);
 
     for (int i = 1; i <= n; i++)
     {
@@ -147,6 +147,8 @@ void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int m
             }
         }
     }
+    similarity = s[n][m];
+
     // display_matrix(s);
     // cout << '\n';
     // display_backtrack(Backtrack);
@@ -154,32 +156,52 @@ void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int m
     return;
 }
 
-void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw, int &s, int &match, int &mu, int &sigma)
+void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw, int &match, int &mu, int &sigma)
 {
-    if (i == 0 || j == 0)
+    if (i == 0 && j == 0)
     {
         return;
     }
+    else if (i == 0 && j != 0)
+    {
+        while (j != 0)
+        {
+
+            Sv.push_back('-');
+            Sw.push_back(w[--j]);
+        }
+
+        return;
+    }
+    else if (j == 0 && i != 0)
+    {
+        while (i != 0)
+        {
+            Sv.push_back(v[--i]);
+            Sw.push_back('-');
+        }
+
+        return;
+    }
+
     if (Backtrack[i][j] == 'd')
     {
-        s -= sigma;
         Sv.push_back(v[i - 1]);
         Sw.push_back('-');
-        return OutputLCS(Backtrack, w, v, i - 1, j, Sv, Sw, s, match, mu, sigma);
+        return OutputLCS(Backtrack, w, v, i - 1, j, Sv, Sw, match, mu, sigma);
     }
     else if (Backtrack[i][j] == 'r')
     {
-        s -= sigma;
         Sw.push_back(w[j - 1]);
         Sv.push_back('-');
-        return OutputLCS(Backtrack, w, v, i, j - 1, Sv, Sw, s, match, mu, sigma);
+        return OutputLCS(Backtrack, w, v, i, j - 1, Sv, Sw, match, mu, sigma);
     }
     else
     {
-        Backtrack[i][j] == 'M' ? s += match : s -= mu;
+
         Sv.push_back(v[i - 1]);
         Sw.push_back(w[j - 1]);
-        return OutputLCS(Backtrack, w, v, i - 1, j - 1, Sv, Sw, s, match, mu, sigma);
+        return OutputLCS(Backtrack, w, v, i - 1, j - 1, Sv, Sw, match, mu, sigma);
     }
 
     return;

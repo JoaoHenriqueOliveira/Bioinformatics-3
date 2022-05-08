@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+//* Edit Distance Problem
 
 using namespace std;
 
@@ -39,6 +40,7 @@ void initialize_score(vector<vector<int>> &s, int row, int col, int indel)
         }
     }
 
+    // We dont prioritize any starting point, hence we penalize first row and column
     for (int j = 1; j < col; j++)
     {
         s[0][j] += s[0][j - 1] - indel;
@@ -128,6 +130,7 @@ void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j
 
         return;
     }
+
     if (Backtrack[i][j] == 'd')
     {
         Sv.push_back(v[--i]);
@@ -170,9 +173,10 @@ int Edit_Distance(string &v, string &w)
     vector<char> solution_v, solution_w;
     int solution;
 
-    Global_Alignment(v, w, Backtrack, 0, 1, 1);
+    Global_Alignment(v, w, Backtrack, 0, 1, 1); //* ie maximize the alignment where we have minimum insertion, deletions and mismatches (substitutions)
     OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w);
 
+    //* Given the best alignments, we compute the number of mismatches among them, ie the Hamming Distance
     solution = Hamming_Distance(solution_v, solution_w);
 
     return solution;

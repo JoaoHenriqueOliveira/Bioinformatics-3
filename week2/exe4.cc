@@ -1,23 +1,10 @@
 #include <bits/stdc++.h>
-//* Local Alignment Problem (Smith-Waterman Algorithm)
+//* Fitting Alignment Problem
 
 using namespace std;
+const int SIGMA = 1;
 
-const int SIGMA = 5;
-
-pair<int, int> Local_Alignment(string &v, string &w, vector<vector<char>> &Backtrack, map<char, map<char, int>> &PAM250, int &similarity);
-void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw);
-
-void populate(string file, string &v, string &w)
-{
-    ifstream my_file(file);
-    assert(my_file.is_open());
-    my_file >> v >> w;
-
-    return;
-}
-
-void build_PAM250(map<char, map<char, int>> &PAM250, string file = "PAM250.txt")
+void build_BLOSUM62(map<char, map<char, int>> &BLOSUM62, string file = "BLOSUM62.txt")
 {
     ifstream my_file(file);
     assert(my_file.is_open());
@@ -30,46 +17,67 @@ void build_PAM250(map<char, map<char, int>> &PAM250, string file = "PAM250.txt")
             if (chr == ' ')
                 continue;
             map<char, int> tmp;
-            PAM250[chr] = tmp;
+            BLOSUM62[chr] = tmp;
         }
         break;
     }
 
     while (!my_file.eof())
     {
-        for (auto elem : PAM250)
+        for (auto elem : BLOSUM62)
         {
             char protein = elem.first;
             int tmp;
-            for (auto var : PAM250)
+            for (auto var : BLOSUM62)
             {
                 my_file >> tmp;
-                PAM250[protein][var.first] = tmp;
+                BLOSUM62[protein][var.first] = tmp;
             }
         }
     }
 
+    // for (auto elem : BLOSUM62)
+    // {
+    //     char prt1 = elem.first;
+    //     for (auto var : elem.second)
+    //     {
+    //         cout << "(" << prt1 << ", " << var.first << ") = " << var.second << '\t';
+    //     }
+    //     cout << '\n';
+    // }
+
     return;
 }
 
+void populate(string file, string &v, string &w)
+{
+    ifstream my_file(file);
+    assert(my_file.is_open());
+
+    my_file >> v >> w;
+
+    return;
+}
+
+pair<int, int> Fitting_Alignment(string &v, string &w, vector<vector<char>> &Backtrack, map<char, map<char, int>> &BLOSUM62, int &similarity);
+void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw);
+
 int main(int argc, char const *argv[])
 {
-    string file_name = argv[1], // dataset_247_10.txt
+    string file_name = argv[1], // dataset_248_5.txt
         v, w;
-    int similarity(0);
-    map<char, map<char, int>> PAM250;
+    map<char, map<char, int>> BLOSUM62;
     vector<vector<char>> Backtrack;
-
     vector<char> solution_v, solution_w;
+    int similarity(0);
 
     populate(file_name, v, w);
-    build_PAM250(PAM250);
+    build_BLOSUM62(BLOSUM62);
 
-    auto max_coord = Local_Alignment(v, w, Backtrack, PAM250, similarity);
-    int i_max = max_coord.first, j_max = max_coord.second;
+    auto coord = Fitting_Alignment(v, w, Backtrack, BLOSUM62, similarity);
+    int i_fit = coord.first, j_fit = coord.second;
 
-    OutputLCS(Backtrack, w, v, i_max, j_max, solution_v, solution_w);
-
+    OutputLCS(Backtrack, w, v, i_fit, j_fit, solution_v, solution_w);
     reverse(solution_v.begin(), solution_v.end());
     reverse(solution_w.begin(), solution_w.end());
 
@@ -127,7 +135,6 @@ void initialize_backtrack(vector<vector<char>> &m, int row, int col)
             m[i].push_back('-');
         }
     }
-    // Both First row and col aren't penalized as the starting point can be anywhere
     return;
 }
 
@@ -143,25 +150,30 @@ void initialize_score(vector<vector<int>> &s, int row, int col)
         }
     }
 
+    // Only first row is penalized
+    for (int j = 1; j < col; j++)
+    {
+        s[0][j] += s[0][j - 1] - SIGMA;
+    }
+
     return;
 }
 
-pair<int, int> Local_Alignment(string &v, string &w, vector<vector<char>> &Backtrack, map<char, map<char, int>> &PAM250, int &similarity)
+pair<int, int> Fitting_Alignment(string &v, string &w, vector<vector<char>> &Backtrack, map<char, map<char, int>> &BLOSUM62, int &similarity)
 {
     int n = v.size(), m = w.size();
     vector<vector<int>> s;
     initialize_score(s, n + 1, m + 1);
     initialize_backtrack(Backtrack, n + 1, m + 1);
-    int max_val = numeric_limits<int>::min(), i_max, j_max;
+    int max_val = numeric_limits<int>::min(), i_max;
 
     for (int i = 1; i <= n; i++)
     {
         for (int j = 1; j <= m; j++)
         {
             char protein1 = v[i - 1], protein2 = w[j - 1];
-            int match_score = PAM250[protein1][protein2];
-            s[i][j] = max(max(s[i - 1][j] - SIGMA, s[i][j - 1] - SIGMA),
-                          max(0, s[i - 1][j - 1] + match_score)); //* The zero represents free rides from all nodes to the sink
+            int match_score = BLOSUM62[protein1][protein2];
+            s[i][j] = max(max(s[i - 1][j] - SIGMA, s[i][j - 1] - SIGMA), s[i - 1][j - 1] + match_score);
 
             if (s[i][j] == s[i][j - 1] - SIGMA)
             {
@@ -173,19 +185,17 @@ pair<int, int> Local_Alignment(string &v, string &w, vector<vector<char>> &Backt
             }
             else if (s[i][j] == s[i - 1][j - 1] + match_score)
             {
-                Backtrack[i][j] = 'M'; // match/mismatch
+                Backtrack[i][j] = 'm'; // match/mismatch
             }
-            else
-            {
-                Backtrack[i][j] = 's'; // source
-            }
+        }
+    }
 
-            if (s[i][j] >= max_val)
-            {
-                max_val = s[i][j];
-                i_max = i;
-                j_max = j;
-            }
+    for (int i = 0; i <= n; i++)
+    {
+        if (s[i][m] > max_val)
+        {
+            max_val = s[i][m];
+            i_max = i;
         }
     }
 
@@ -195,15 +205,16 @@ pair<int, int> Local_Alignment(string &v, string &w, vector<vector<char>> &Backt
     // cout << '\n';
     // display_backtrack(Backtrack);
 
-    return {i_max, j_max};
+    return {i_max, m};
 }
 
 void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &Sv, vector<char> &Sw)
 {
-    if (Backtrack[i][j] == 's')
+    if (j == 0)
     {
         return;
     }
+
     if (Backtrack[i][j] == 'd')
     {
         Sv.push_back(v[i - 1]);
