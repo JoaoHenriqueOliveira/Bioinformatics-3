@@ -113,8 +113,7 @@ void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j
         while (j != 0)
         {
             Sv.push_back('-');
-            Sw.push_back(w[j - 1]);
-            j--;
+            Sw.push_back(w[--j]);
         }
 
         return;
@@ -123,30 +122,29 @@ void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j
     {
         while (i != 0)
         {
-            Sv.push_back(v[i - 1]);
+            Sv.push_back(v[--i]);
             Sw.push_back('-');
-            i--;
         }
 
         return;
     }
     if (Backtrack[i][j] == 'd')
     {
-        Sv.push_back(v[i - 1]);
+        Sv.push_back(v[--i]);
         Sw.push_back('-');
-        return OutputLCS(Backtrack, w, v, i - 1, j, Sv, Sw);
+        return OutputLCS(Backtrack, w, v, i, j, Sv, Sw);
     }
     else if (Backtrack[i][j] == 'r')
     {
-        Sw.push_back(w[j - 1]);
+        Sw.push_back(w[--j]);
         Sv.push_back('-');
-        return OutputLCS(Backtrack, w, v, i, j - 1, Sv, Sw);
+        return OutputLCS(Backtrack, w, v, i, j, Sv, Sw);
     }
     else
     {
-        Sv.push_back(v[i - 1]);
-        Sw.push_back(w[j - 1]);
-        return OutputLCS(Backtrack, w, v, i - 1, j - 1, Sv, Sw);
+        Sv.push_back(v[--i]);
+        Sw.push_back(w[--j]);
+        return OutputLCS(Backtrack, w, v, i, j, Sv, Sw);
     }
 
     return;
@@ -174,16 +172,6 @@ int Edit_Distance(string &v, string &w)
 
     Global_Alignment(v, w, Backtrack, 0, 1, 1);
     OutputLCS(Backtrack, w, v, v.size(), w.size(), solution_v, solution_w);
-    for (auto elem : solution_w)
-    {
-        cout << elem;
-    }
-    cout << '\n';
-    for (auto elem : solution_v)
-    {
-        cout << elem;
-    }
-    cout << '\n';
 
     solution = Hamming_Distance(solution_v, solution_w);
 
