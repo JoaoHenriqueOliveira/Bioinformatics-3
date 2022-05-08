@@ -3,17 +3,24 @@
 
 using namespace std;
 
-void populate(string file_name, int &match, int &mismatch, int &indel, string &v, string &w);
-void initialize_score(vector<vector<int>> &s, int row, int col, int &indel);
-void initialize_with_char(vector<vector<char>> &m, int row, int col);
-void display_matrix(vector<vector<int>> &m);
-void display_backtrack(vector<vector<char>> &m);
 void Global_Alignment(string v, string w, vector<vector<char>> &Backtrack, int match, int mu, int sigma);
 void OutputLCS(vector<vector<char>> &Backtrack, string w, string v, int i, int j, vector<char> &solution_v, vector<char> &solution_w, int &s, int &match, int &mu, int &sigma);
 
+void populate(string file_name, int &match, int &mismatch, int &indel, string &v, string &w)
+{
+    ifstream my_file(file_name);
+    assert(my_file.is_open());
+    my_file >> match >> mismatch >> indel;
+    my_file >> w;
+    my_file >> v;
+
+    return;
+}
+
 int main(int argc, char const *argv[])
 {
-    string file = argv[1], v, w;
+    string file = argv[1], // dataset_247_3.txt
+        v, w;
     int match, mu, sigma, similarity(0);
     vector<vector<char>> Backtrack;
     vector<char> solution_v, solution_w;
@@ -39,17 +46,6 @@ int main(int argc, char const *argv[])
     cout << '\n';
 
     return 0;
-}
-
-void populate(string file_name, int &match, int &mismatch, int &indel, string &v, string &w)
-{
-    ifstream my_file(file_name);
-    assert(my_file.is_open());
-    my_file >> match >> mismatch >> indel;
-    my_file >> w;
-    my_file >> v;
-
-    return;
 }
 
 void initialize_score(vector<vector<int>> &s, int row, int col, int &indel)
