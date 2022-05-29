@@ -67,7 +67,7 @@ void FromSrc(string &v, string &w, vector<vector<int>> &from_src, int col, int &
         for (int i = 1; i <= n; i++)
         {
             match_score = v[i - 1] == w[j - 1] ? match : -mu;
-            from_src[curr_col][i] = max(max(from_src[prev_col][i] - indel, from_src[curr_col][i - 1]),
+            from_src[curr_col][i] = max(max(from_src[prev_col][i] - indel, from_src[curr_col][i - 1] - indel),
                                         from_src[prev_col][i - 1] + match_score);
         }
     }
@@ -89,7 +89,7 @@ void ToSink(string &v, string &w, vector<vector<int>> &to_sink, int col, int &ma
         for (int i = 1; i <= n; i++)
         {
             match_score = v[n - i] == w[m - j] ? match : -mu;
-            to_sink[curr_col][i] = max(max(to_sink[prev_col][i] - indel, to_sink[curr_col][i - 1]),
+            to_sink[curr_col][i] = max(max(to_sink[prev_col][i] - indel, to_sink[curr_col][i - 1] - indel),
                                        to_sink[prev_col][i - 1] + match_score);
         }
     }
