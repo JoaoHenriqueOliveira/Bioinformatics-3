@@ -177,7 +177,7 @@ vector<vector<int>> MiddleEdges(string &v, string &w, int top, int bottom, int c
 
     int node_src = max_element(middle_col_src.begin(), middle_col_src.end()) - middle_col_src.begin();
     int node_tgt = max_element(middle_col_tgt.begin(), middle_col_tgt.end()) - middle_col_tgt.begin();
-    int max_value = middle_col_src[node_src], middle_node_src, match_score;
+    int max_value = middle_col_src[node_src], match_score;
 
     // Local search of edge within [top, bottom] x [col, col + 1]
 
